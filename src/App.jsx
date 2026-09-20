@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Edit, SquarePen, Trash } from "lucide-react";
+import FormularioGasto from "./components/FormularioGasto";
 
 const categorias = ["Comida", "Transporte", "Alojamiento", "Compras", "Otros"];
 const monedas = ["USD", "COP"];
@@ -207,209 +208,12 @@ function App() {
           <h2 className="mb-4 text-lg font-semibold text-slate-100">
             Nuevo gasto
           </h2>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              agregarGasto();
-            }}
-            className="grid grid-cols-1 gap-4 sm:grid-cols-3"
-          >
-            <div className="flex flex-col gap-1 sm:col-span-2">
-              <label
-                htmlFor="tituloGasto"
-                className="text-sm font-medium text-slate-300"
-              >
-                Gasto
-              </label>
-              <input
-                name="titulo"
-                value={gastosFormulario.titulo}
-                onChange={handleGatosChange}
-                id="tituloGasto"
-                type="text"
-                required
-                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="fecha"
-                className="text-sm font-medium text-slate-300"
-              >
-                Fecha
-              </label>
-              <input
-                name="fecha"
-                value={gastosFormulario.fecha}
-                onChange={handleGatosChange}
-                id="fecha"
-                type="date"
-                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="ciudad"
-                className="text-sm font-medium text-slate-300"
-              >
-                Ciudad
-              </label>
-              <select
-                name="ciudad"
-                id="ciudad"
-                value={gastosFormulario.ciudad}
-                onChange={handleGatosChange}
-                required
-                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-              >
-                <option value="">Selecciona...</option>
-                {ciudades.map((ciudad) => (
-                  <option key={ciudad} value={ciudad}>
-                    {ciudad}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="categoria"
-                className="text-sm font-medium text-slate-300"
-              >
-                Categoría
-              </label>
-              <select
-                name="categoria"
-                id="categoria"
-                value={gastosFormulario.categoria}
-                onChange={handleGatosChange}
-                required
-                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-              >
-                <option value="">Selecciona...</option>
-                {categorias.map((categoria) => (
-                  <option key={categoria} value={categoria}>
-                    {categoria}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="monto"
-                className="text-sm font-medium text-slate-300"
-              >
-                Monto
-              </label>
-              <input
-                name="monto"
-                value={gastosFormulario.monto}
-                onChange={handleGatosChange}
-                id="monto"
-                type="number"
-                required
-                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="moneda"
-                className="text-sm font-medium text-slate-300"
-              >
-                Moneda
-              </label>
-              <select
-                name="moneda"
-                id="moneda"
-                onChange={handleGatosChange}
-                required
-                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-              >
-                <option value="">Selecciona...</option>
-                {monedas.map((moneda) => (
-                  <option key={moneda} value={moneda}>
-                    {moneda}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="metodo"
-                className="text-sm font-medium text-slate-300"
-              >
-                Método de pago
-              </label>
-              <select
-                name="metodo"
-                id="metodo"
-                value={gastosFormulario.metodo}
-                onChange={handleGatosChange}
-                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-              >
-                <option value="">Selecciona...</option>
-                {metodosPago.map((metodo) => (
-                  <option key={metodo} value={metodo}>
-                    {metodo}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="pagador"
-                className="text-sm font-medium text-slate-300"
-              >
-                Quién pagó
-              </label>
-              <select
-                name="pagador"
-                id="pagador"
-                value={gastosFormulario.pagador}
-                onChange={handleGatosChange}
-                required
-                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-              >
-                <option value="">Selecciona...</option>
-                {usuarios.map((usuario) => (
-                  <option key={usuario} value={usuario}>
-                    {usuario}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1 sm:col-span-3">
-              <label
-                htmlFor="nota"
-                className="text-sm font-medium text-slate-300"
-              >
-                Nota (opcional)
-              </label>
-              <textarea
-                name="nota"
-                value={gastosFormulario.nota}
-                onChange={handleGatosChange}
-                id="nota"
-                rows={2}
-                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-              />
-            </div>
-
-            <button
-              disabled={cargandoTasa}
-              type="submit"
-              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 sm:col-span-3"
-            >
-              Agregar
-            </button>
-          </form>
+          <FormularioGasto
+            values={gastosFormulario}
+            onChange={handleGatosChange}
+            onSubmit={agregarGasto}
+            disabled={cargandoTasa}
+          />
         </section>
 
         <section className="flex flex-wrap gap-3">
@@ -545,7 +349,10 @@ function App() {
                     Pesos
                   </h3>
                   <span className="text-2xl font-bold text-slate-100">
-                    ${totalEnCOP.toLocaleString("es-CO", { maximumFractionDigits: 0 })}
+                    $
+                    {totalEnCOP.toLocaleString("es-CO", {
+                      maximumFractionDigits: 0,
+                    })}
                     <span className="ml-1 text-sm font-medium text-slate-500">
                       COP
                     </span>
@@ -568,7 +375,11 @@ function App() {
                           ${total.USD.toLocaleString("en-US")} USD
                         </span>
                         <span className="text-indigo-400">
-                          ${total.COP.toLocaleString("es-CO", { maximumFractionDigits: 0 })} COP
+                          $
+                          {total.COP.toLocaleString("es-CO", {
+                            maximumFractionDigits: 0,
+                          })}{" "}
+                          COP
                         </span>
                       </div>
                     </div>
@@ -589,7 +400,11 @@ function App() {
                           ${total.USD.toLocaleString("en-US")} USD
                         </span>
                         <span className="text-indigo-400">
-                          ${total.COP.toLocaleString("es-CO", { maximumFractionDigits: 0 })} COP
+                          $
+                          {total.COP.toLocaleString("es-CO", {
+                            maximumFractionDigits: 0,
+                          })}{" "}
+                          COP
                         </span>
                       </div>
                     </div>
