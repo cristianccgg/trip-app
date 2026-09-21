@@ -16,6 +16,8 @@ function App() {
   const [tasaCambio, setTasaCambio] = useState(null);
   const [cargandoTasa, setCargandoTasa] = useState(false);
   const [errorTasa, setErrorTasa] = useState(false);
+  const [gastoEditando, setGastoEditando] = useState(null);
+  const [abrirRegistro, setAbrirRegistro] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("gastos", JSON.stringify(gastos));
@@ -59,6 +61,18 @@ function App() {
     pagador: "",
   });
 
+  const [gastoEditForm, setGastoEditForm] = useState({
+    titulo: "",
+    ciudad: "",
+    categoria: "",
+    moneda: "",
+    metodo: "",
+    monto: "",
+    fecha: new Date().toISOString().split("T")[0],
+    nota: "",
+    pagador: "",
+  });
+
   const agregarGasto = () => {
     const nuevoGasto = {
       id: crypto.randomUUID(),
@@ -87,13 +101,92 @@ function App() {
     });
   };
 
+  const iniciarEdicion = (gasto) => {
+    setGastoEditando(gasto.id);
+    setGastoEditForm({
+      titulo: gasto.titulo,
+      ciudad: gasto.ciudad,
+      categoria: gasto.categoria,
+      moneda: gasto.moneda,
+      metodo: gasto.metodo,
+      monto: gasto.monto,
+      fecha: gasto.fecha,
+      nota: gasto.nota,
+      pagador: gasto.pagador,
+    });
+  };
+
+  const editarGasto = () => {
+    setGastos((prevGastos) =>
+      prevGastos.map((gasto) =>
+        gasto.id === gastoEditando
+          ? {
+              ...gasto,
+              titulo: gastoEditForm.titulo,
+              ciudad: gastoEditForm.ciudad,
+              categoria: gastoEditForm.categoria,
+              moneda: gastoEditForm.moneda,
+              metodo: gastoEditForm.metodo,
+              monto: Number(gastoEditForm.monto),
+              fecha: gastoEditForm.fecha,
+              nota: gastoEditForm.nota,
+              pagador: gastoEditForm.pagador,
+            }
+          : gasto,
+      ),
+    );
+    setGastoEditForm({
+      titulo: "",
+      ciudad: "",
+      categoria: "",
+      moneda: "",
+      metodo: "",
+      monto: "",
+      fecha: new Date().toISOString().split("T")[0],
+      nota: "",
+      pagador: "",
+    });
+    setGastoEditando(null);
+  };
+
+  const cancelarEdicion = () => {
+    setGastoEditando(null);
+
+    setGastoEditForm({
+      titulo: "",
+      ciudad: "",
+      categoria: "",
+      moneda: "",
+      metodo: "",
+      monto: "",
+      fecha: new Date().toISOString().split("T")[0],
+      nota: "",
+      pagador: "",
+    });
+  };
+
+  const cancelarRegistro = () => {
+    setAbrirRegistro(false);
+    setGastosFormulario({
+      titulo: "",
+      ciudad: "",
+      categoria: "",
+      moneda: "",
+      metodo: "",
+      monto: "",
+      fecha: new Date().toISOString().split("T")[0],
+      nota: "",
+      pagador: "",
+    });
+  };
+
   const eliminarGasto = (IdGasto) => {
     setGastos((prevGastos) =>
       prevGastos.filter((gasto) => gasto.id !== IdGasto),
     );
   };
 
-  const handleGatosChange = (e) => {
+  const handleGastosChange = (e) => {
     const name = e.target.name;
     const value = e.target.value;
     setGastosFormulario({
@@ -107,6 +200,15 @@ function App() {
     const value = e.target.value;
     setFiltros({
       ...filtros,
+      [name]: value,
+    });
+  };
+
+  const handleGastosEdit = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    setGastoEditForm({
+      ...gastoEditForm,
       [name]: value,
     });
   };
@@ -133,17 +235,28 @@ function App() {
           <p>Tasa de cambio de hoy: ${tasaCambio}</p>
         )}
 
-        <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-100">
-            Nuevo gasto
-          </h2>
-          <FormularioGasto
-            values={gastosFormulario}
-            onChange={handleGatosChange}
-            onSubmit={agregarGasto}
-            disabled={cargandoTasa}
-          />
-        </section>
+        {!abrirRegistro ? (
+          <button
+            onClick={() => setAbrirRegistro(true)}
+            type="button"
+            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 sm:col-span-3"
+          >
+            Registrar nuevo gasto
+          </button>
+        ) : (
+          <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-semibold text-slate-100">
+              Nuevo gasto
+            </h2>
+            <FormularioGasto
+              values={gastosFormulario}
+              onChange={handleGastosChange}
+              onSubmit={agregarGasto}
+              disabled={cargandoTasa}
+              onCancelar={cancelarRegistro}
+            />
+          </section>
+        )}
 
         <Filtros filtros={filtros} onChange={handleChange} />
 
@@ -159,7 +272,13 @@ function App() {
           ) : (
             <ListaGastos
               gastosFiltrados={gastosFiltrados}
+              gastoEditando={gastoEditando}
+              gastoEditForm={gastoEditForm}
+              onChange={handleGastosEdit}
               onEliminar={eliminarGasto}
+              onEditar={iniciarEdicion}
+              onCancelar={cancelarEdicion}
+              onSubmit={editarGasto}
             />
           )}
 

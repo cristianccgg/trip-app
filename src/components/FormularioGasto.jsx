@@ -6,7 +6,14 @@ const metodosPago = ["Tarjeta", "Efectivo", "Paypal"];
 const usuarios = ["Cristian", "Daniela", "Ambos"];
 const ciudades = ["Orlando", "New York", "Bogota"];
 
-const FormularioGasto = ({ values, onChange, onSubmit, disabled }) => {
+const FormularioGasto = ({
+  values,
+  onChange,
+  onSubmit,
+  disabled,
+  onCancelar,
+  textoSubmit = "Agregar",
+}) => {
   return (
     <form
       onSubmit={(e) => {
@@ -182,13 +189,20 @@ const FormularioGasto = ({ values, onChange, onSubmit, disabled }) => {
           className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
         />
       </div>
+      <button
+        onClick={onCancelar}
+        type="button"
+        className="rounded-md bg-indigo-200 px-4 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-700 hover:text-white sm:col-span-3"
+      >
+        Cancelar
+      </button>
 
       <button
         disabled={disabled}
         type="submit"
         className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 sm:col-span-3"
       >
-        Agregar
+        {textoSubmit}
       </button>
     </form>
   );
