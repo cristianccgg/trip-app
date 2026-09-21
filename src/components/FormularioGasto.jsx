@@ -1,10 +1,5 @@
 import React from "react";
-
-const categorias = ["Comida", "Transporte", "Alojamiento", "Compras", "Otros"];
-const monedas = ["USD", "COP"];
-const metodosPago = ["Tarjeta", "Efectivo", "Paypal"];
-const usuarios = ["Cristian", "Daniela", "Ambos"];
-const ciudades = ["Orlando", "New York", "Bogota"];
+import { categorias, monedas, metodosPago, usuarios, ciudades } from "../constants";
 
 const FormularioGasto = ({
   values,

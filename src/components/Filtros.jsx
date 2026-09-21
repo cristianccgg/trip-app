@@ -1,7 +1,5 @@
 import React from "react";
-const ciudades = ["Orlando", "New York", "Bogota"];
-const usuarios = ["Cristian", "Daniela", "Ambos"];
-const categorias = ["Comida", "Transporte", "Alojamiento", "Compras", "Otros"];
+import { ciudades, usuarios, categorias } from "../constants";
 
 const Filtros = ({ filtros, onChange }) => {
   return (
