@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
-import { Edit, SquarePen, Trash } from "lucide-react";
 import FormularioGasto from "./components/FormularioGasto";
-
-const categorias = ["Comida", "Transporte", "Alojamiento", "Compras", "Otros"];
-const monedas = ["USD", "COP"];
-const metodosPago = ["Tarjeta", "Efectivo", "Paypal"];
-const usuarios = ["Cristian", "Daniela", "Ambos"];
-const ciudades = ["Orlando", "New York", "Bogota"];
+import Filtros from "./components/Filtros";
+import ListaGastos from "./components/ListaGastos";
+import Totales from "./components/Totales";
 
 function App() {
   const [gastos, setGastos] = useState(() => {
@@ -123,73 +119,6 @@ function App() {
       (filtros.pagador === "todas" || gasto.pagador === filtros.pagador),
   );
 
-  const totalGastos = gastosFiltrados.reduce(
-    (total, gasto) => total + gasto.monto,
-    0,
-  );
-
-  const totalUSD = gastosFiltrados.reduce(
-    (total, gasto) => (gasto.moneda === "USD" ? total + gasto.monto : total),
-    0,
-  );
-
-  const totalCOP = gastosFiltrados.reduce(
-    (total, gasto) => (gasto.moneda === "COP" ? total + gasto.monto : total),
-    0,
-  );
-
-  const totalEnCOP = gastosFiltrados.reduce(
-    (total, gasto) =>
-      gasto.moneda === "USD"
-        ? total + gasto.monto * gasto.tasaAldia
-        : total + gasto.monto,
-    0,
-  );
-
-  const totalPorCiudad = gastosFiltrados.reduce((total, gasto) => {
-    if (!total[gasto.ciudad]) {
-      total[gasto.ciudad] = { USD: 0, COP: 0 };
-    }
-    if (gasto.moneda === "USD") {
-      total[gasto.ciudad].USD += gasto.monto;
-      total[gasto.ciudad].COP += gasto.monto * gasto.tasaAldia;
-    } else {
-      total[gasto.ciudad].COP += gasto.monto;
-    }
-    return total;
-  }, {});
-
-  const totalPorPagador = gastosFiltrados.reduce((total, gasto) => {
-    if (gasto.pagador === "Ambos") {
-      if (!total["Cristian"]) {
-        total["Cristian"] = { USD: 0, COP: 0 };
-      }
-      if (!total["Daniela"]) {
-        total["Daniela"] = { USD: 0, COP: 0 };
-      }
-      if (gasto.moneda === "USD") {
-        total["Cristian"].USD += gasto.monto / 2;
-        total["Cristian"].COP += (gasto.monto / 2) * gasto.tasaAldia;
-        total["Daniela"].USD += gasto.monto / 2;
-        total["Daniela"].COP += (gasto.monto / 2) * gasto.tasaAldia;
-      } else {
-        total["Cristian"].COP += gasto.monto / 2;
-        total["Daniela"].COP += gasto.monto / 2;
-      }
-    } else {
-      if (!total[gasto.pagador]) {
-        total[gasto.pagador] = { USD: 0, COP: 0 };
-      }
-      if (gasto.moneda === "USD") {
-        total[gasto.pagador].USD += gasto.monto;
-        total[gasto.pagador].COP += gasto.monto * gasto.tasaAldia;
-      } else {
-        total[gasto.pagador].COP += gasto.monto;
-      }
-    }
-    return total;
-  }, {});
-
   return (
     <div className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100">
       <div className="mx-auto max-w-2xl space-y-8">
@@ -216,48 +145,7 @@ function App() {
           />
         </section>
 
-        <section className="flex flex-wrap gap-3">
-          <select
-            name="ciudad"
-            value={filtros.ciudad}
-            onChange={handleChange}
-            className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-          >
-            <option value="todas">Ciudad</option>
-
-            {ciudades.map((ciudad) => (
-              <option key={ciudad} value={ciudad}>
-                {ciudad}
-              </option>
-            ))}
-          </select>
-          <select
-            name="categoria"
-            value={filtros.categoria}
-            onChange={handleChange}
-            className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-          >
-            <option value="todas">Categoria</option>
-            {categorias.map((categoria) => (
-              <option key={categoria} value={categoria}>
-                {categoria}
-              </option>
-            ))}
-          </select>
-          <select
-            name="pagador"
-            value={filtros.pagador}
-            onChange={handleChange}
-            className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-          >
-            <option value="todas">Pagador</option>
-            {usuarios.map((usuario) => (
-              <option key={usuario} value={usuario}>
-                {usuario}
-              </option>
-            ))}
-          </select>
-        </section>
+        <Filtros filtros={filtros} onChange={handleChange} />
 
         <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold text-slate-100">
@@ -269,150 +157,13 @@ function App() {
               Todavía no has agregado ningún gasto.
             </p>
           ) : (
-            <ul className="space-y-3">
-              {gastosFiltrados.map((gasto) => (
-                <li
-                  key={gasto.id}
-                  className="flex items-start justify-between gap-4 rounded-lg border border-slate-800 bg-slate-800/30 p-4 transition-colors hover:border-slate-700"
-                >
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium text-slate-100">
-                        {gasto.titulo}
-                      </p>
-                      {gasto.categoria && (
-                        <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">
-                          {gasto.categoria}
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {[gasto.fecha, gasto.ciudad, gasto.metodo, gasto.pagador]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                    {gasto.nota && (
-                      <p className="mt-1 text-sm italic text-slate-500">
-                        {gasto.nota}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex shrink-0 items-center gap-4">
-                    <div className="text-right">
-                      <p
-                        className={`font-semibold whitespace-nowrap ${gasto.moneda === "USD" ? "text-emerald-400" : "text-indigo-400"}`}
-                      >
-                        ${gasto.monto.toLocaleString("en-US")} {gasto.moneda}
-                      </p>
-                      {gasto.moneda === "USD" && (
-                        <p className="text-xs whitespace-nowrap text-slate-500">
-                          $
-                          {(gasto.monto * gasto.tasaAldia).toLocaleString(
-                            "es-CO",
-                            { maximumFractionDigits: 0 },
-                          )}{" "}
-                          COP
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <Edit className="h-4 w-4 cursor-pointer text-slate-500 hover:text-slate-300" />
-                      <Trash
-                        onClick={() => eliminarGasto(gasto.id)}
-                        className="h-4 w-4 cursor-pointer text-slate-500 hover:text-red-400"
-                      />
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <ListaGastos
+              gastosFiltrados={gastosFiltrados}
+              onEliminar={eliminarGasto}
+            />
           )}
 
-          <div className="mt-6 space-y-4 border-t border-slate-800 pt-4">
-            <div>
-              <span className="text-sm text-slate-400">Total gastado</span>
-              <div className="mt-2 grid grid-cols-2 gap-3">
-                <div className="rounded-lg border border-emerald-900/50 bg-emerald-950/30 p-3">
-                  <h3 className="text-xs font-semibold tracking-wide text-emerald-400 uppercase">
-                    Dólares
-                  </h3>
-                  <span className="text-2xl font-bold text-slate-100">
-                    ${totalUSD.toLocaleString("en-US")}
-                    <span className="ml-1 text-sm font-medium text-slate-500">
-                      USD
-                    </span>
-                  </span>
-                </div>
-                <div className="rounded-lg border border-indigo-900/50 bg-indigo-950/30 p-3">
-                  <h3 className="text-xs font-semibold tracking-wide text-indigo-400 uppercase">
-                    Pesos
-                  </h3>
-                  <span className="text-2xl font-bold text-slate-100">
-                    $
-                    {totalEnCOP.toLocaleString("es-CO", {
-                      maximumFractionDigits: 0,
-                    })}
-                    <span className="ml-1 text-sm font-medium text-slate-500">
-                      COP
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-lg bg-slate-800/50 p-3">
-                <p className="mb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">
-                  Por ciudad
-                </p>
-                <div className="space-y-2">
-                  {Object.entries(totalPorCiudad).map(([ciudad, total]) => (
-                    <div key={ciudad} className="text-sm">
-                      <span className="text-slate-300">{ciudad}</span>
-                      <div className="mt-0.5 flex justify-between text-xs">
-                        <span className="text-emerald-400">
-                          ${total.USD.toLocaleString("en-US")} USD
-                        </span>
-                        <span className="text-indigo-400">
-                          $
-                          {total.COP.toLocaleString("es-CO", {
-                            maximumFractionDigits: 0,
-                          })}{" "}
-                          COP
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-lg bg-slate-800/50 p-3">
-                <p className="mb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">
-                  Por pagador
-                </p>
-                <div className="space-y-2">
-                  {Object.entries(totalPorPagador).map(([pagador, total]) => (
-                    <div key={pagador} className="text-sm">
-                      <span className="text-slate-300">{pagador}</span>
-                      <div className="mt-0.5 flex justify-between text-xs">
-                        <span className="text-emerald-400">
-                          ${total.USD.toLocaleString("en-US")} USD
-                        </span>
-                        <span className="text-indigo-400">
-                          $
-                          {total.COP.toLocaleString("es-CO", {
-                            maximumFractionDigits: 0,
-                          })}{" "}
-                          COP
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          <Totales gastosFiltrados={gastosFiltrados} />
         </section>
       </div>
     </div>
