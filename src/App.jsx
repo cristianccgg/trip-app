@@ -18,10 +18,26 @@ function App() {
   const [errorTasa, setErrorTasa] = useState(false);
   const [gastoEditando, setGastoEditando] = useState(null);
   const [abrirRegistro, setAbrirRegistro] = useState(false);
+  const [presupuesto, setPresupuesto] = useState(() => {
+    const guardado = localStorage.getItem("presupuesto");
+    if (guardado) {
+      return JSON.parse(guardado);
+    } else {
+      return {
+        total: "",
+        orlando: "",
+        newYork: "",
+      };
+    }
+  });
 
   useEffect(() => {
     localStorage.setItem("gastos", JSON.stringify(gastos));
   }, [gastos]);
+
+  useEffect(() => {
+    localStorage.setItem("presupuesto", JSON.stringify(presupuesto));
+  }, [presupuesto]);
 
   useEffect(() => {
     const tasaDeCambio = async () => {
@@ -213,6 +229,15 @@ function App() {
     });
   };
 
+  const handleChangePresupuesto = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    setPresupuesto({
+      ...presupuesto,
+      [name]: value,
+    });
+  };
+
   const gastosFiltrados = gastos.filter(
     (gasto) =>
       (filtros.ciudad === "todas" || gasto.ciudad === filtros.ciudad) &&
@@ -234,6 +259,42 @@ function App() {
         ) : (
           <p>Tasa de cambio de hoy: ${tasaCambio}</p>
         )}
+
+        <div>
+          <h2>Presupuesto</h2>
+          <div className="flex justify-between">
+            <div className="flex flex-col">
+              <label htmlFor="orlando">Orlando</label>
+              <input
+                value={presupuesto.orlando}
+                name="orlando"
+                onChange={handleChangePresupuesto}
+                type="number"
+                id="orlando"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="newYork">New York</label>
+              <input
+                value={presupuesto.newYork}
+                onChange={handleChangePresupuesto}
+                name="newYork"
+                type="number"
+                id="newYork"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="total">Total</label>
+              <input
+                value={presupuesto.total}
+                onChange={handleChangePresupuesto}
+                name="total"
+                type="number"
+                id="total"
+              />
+            </div>
+          </div>
+        </div>
 
         {!abrirRegistro ? (
           <button
@@ -282,7 +343,11 @@ function App() {
             />
           )}
 
-          <Totales gastosFiltrados={gastosFiltrados} />
+          <Totales
+            gastosFiltrados={gastosFiltrados}
+            presupuesto={presupuesto}
+            tasaCambio={tasaCambio}
+          />
         </section>
       </div>
     </div>

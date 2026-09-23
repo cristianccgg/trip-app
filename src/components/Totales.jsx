@@ -1,6 +1,6 @@
 import React from "react";
 
-const Totales = ({ gastosFiltrados }) => {
+const Totales = ({ gastosFiltrados, presupuesto, tasaCambio }) => {
   const totalUSD = gastosFiltrados.reduce(
     (total, gasto) => (gasto.moneda === "USD" ? total + gasto.monto : total),
     0,
@@ -57,6 +57,53 @@ const Totales = ({ gastosFiltrados }) => {
     }
     return total;
   }, {});
+
+  const restanteUSD_total = Number(presupuesto.total) - totalUSD;
+  const restanteCOP_total = restanteUSD_total * tasaCambio;
+  const restantePorCiudad = {
+    Orlando: {
+      USD: Number(presupuesto.orlando) - (totalPorCiudad["Orlando"]?.USD ?? 0),
+      COP:
+        (Number(presupuesto.orlando) - (totalPorCiudad["Orlando"]?.USD ?? 0)) *
+        tasaCambio,
+    },
+
+    NewYork: {
+      USD: Number(presupuesto.newYork) - (totalPorCiudad["New York"]?.USD ?? 0),
+      COP:
+        (Number(presupuesto.newYork) - (totalPorCiudad["New York"]?.USD ?? 0)) *
+        tasaCambio,
+    },
+  };
+
+  const formatoUSD = (valor) =>
+    valor.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  const formatoCOP = (valor) =>
+    valor.toLocaleString("es-CO", { maximumFractionDigits: 0 });
+
+  const presupuestos = [
+    {
+      nombre: "Total",
+      presupuestoUSD: Number(presupuesto.total),
+      gastadoUSD: totalUSD,
+      restanteUSD: restanteUSD_total,
+      restanteCOP: restanteCOP_total,
+    },
+    {
+      nombre: "Orlando",
+      presupuestoUSD: Number(presupuesto.orlando),
+      gastadoUSD: totalPorCiudad["Orlando"]?.USD ?? 0,
+      restanteUSD: restantePorCiudad.Orlando.USD,
+      restanteCOP: restantePorCiudad.Orlando.COP,
+    },
+    {
+      nombre: "New York",
+      presupuestoUSD: Number(presupuesto.newYork),
+      gastadoUSD: totalPorCiudad["New York"]?.USD ?? 0,
+      restanteUSD: restantePorCiudad.NewYork.USD,
+      restanteCOP: restantePorCiudad.NewYork.COP,
+    },
+  ];
 
   return (
     <div className="mt-6 space-y-4 border-t border-slate-800 pt-4">
@@ -140,6 +187,60 @@ const Totales = ({ gastosFiltrados }) => {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div>
+        <span className="text-sm text-slate-400">Presupuesto</span>
+        <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {presupuestos.map((p) => {
+            const porcentaje =
+              p.presupuestoUSD > 0
+                ? Math.min((p.gastadoUSD / p.presupuestoUSD) * 100, 100)
+                : 0;
+            const excedido = p.restanteUSD < 0;
+
+            return (
+              <div
+                key={p.nombre}
+                className="rounded-lg bg-slate-800/50 p-3"
+              >
+                <h3 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                  {p.nombre}
+                </h3>
+
+                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-700">
+                  <div
+                    className={`h-full rounded-full ${
+                      excedido ? "bg-red-500" : "bg-emerald-500"
+                    }`}
+                    style={{ width: `${porcentaje}%` }}
+                  />
+                </div>
+
+                <div className="mt-2 flex justify-between text-xs text-slate-500">
+                  <span>Gastado ${formatoUSD(p.gastadoUSD)}</span>
+                  <span>Presupuesto ${formatoUSD(p.presupuestoUSD)}</span>
+                </div>
+
+                <div className="mt-2 border-t border-slate-700 pt-2 text-sm">
+                  <p
+                    className={
+                      excedido
+                        ? "font-semibold text-red-400"
+                        : "font-semibold text-emerald-400"
+                    }
+                  >
+                    {excedido ? "Excedido" : "Restante"} $
+                    {formatoUSD(Math.abs(p.restanteUSD))} USD
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    ${formatoCOP(Math.abs(p.restanteCOP))} COP
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
