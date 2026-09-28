@@ -19,7 +19,14 @@ function App() {
       return [];
     }
   });
-  const [tasaCambio, setTasaCambio] = useState(null);
+  const [tasaCambio, setTasaCambio] = useState(() => {
+    const guardado = localStorage.getItem("tasaCambio");
+    if (guardado) {
+      return JSON.parse(guardado);
+    } else {
+      return null;
+    }
+  });
   const [cargandoTasa, setCargandoTasa] = useState(false);
   const [errorTasa, setErrorTasa] = useState(false);
   const [gastoEditando, setGastoEditando] = useState(null);
@@ -104,7 +111,9 @@ function App() {
           throw new Error("Fallo la llamada de la tasa de cambio");
         }
         const data = await response.json();
-        setTasaCambio(Number(data[0].valor));
+        const nuevaTasa = Number(data[0].valor);
+        setTasaCambio(nuevaTasa);
+        localStorage.setItem("tasaCambio", JSON.stringify(nuevaTasa));
       } catch {
         setErrorTasa(true);
       } finally {
