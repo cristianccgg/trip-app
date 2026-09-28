@@ -5,6 +5,10 @@ import ListaGastos from "./components/ListaGastos";
 import Totales from "./components/Totales";
 import FormularioPendientes from "./components/FormularioPendientes";
 import ListaPendientes from "./components/ListaPendientes";
+import FormularioItinerario from "./components/FormularioItinerario";
+import Presupuesto from "./components/Presupuesto";
+import ListaItinerarios from "./components/ListaItinerarios";
+import { categorias } from "./constants";
 
 function App() {
   const [gastos, setGastos] = useState(() => {
@@ -51,6 +55,31 @@ function App() {
     titulo: "",
     prioridad: "",
   });
+  const [itinerario, setItinerario] = useState(() => {
+    const guardado = localStorage.getItem("itinerario");
+    if (guardado) {
+      return JSON.parse(guardado);
+    } else {
+      return [];
+    }
+  });
+  const [formItinerario, setFormItinerario] = useState({
+    lugar: "",
+    categoria: "",
+    direccion: "",
+    nota: "",
+  });
+  const [itinerarioEditando, setItinerarioEditando] = useState(null);
+  const [itinerarioEditForm, setItinerarioEditForm] = useState({
+    lugar: "",
+    categoria: "",
+    direccion: "",
+    nota: "",
+  });
+
+  useEffect(() => {
+    localStorage.setItem("itinerario", JSON.stringify(itinerario));
+  }, [itinerario]);
 
   useEffect(() => {
     localStorage.setItem("pendientes", JSON.stringify(pendientes));
@@ -165,6 +194,39 @@ function App() {
     });
   };
 
+  const iniciarEdicionItinerario = (itinerario) => {
+    setItinerarioEditando(itinerario.id);
+    setItinerarioEditForm({
+      lugar: itinerario.lugar,
+      categoria: itinerario.categoria,
+      direccion: itinerario.direccion,
+      nota: itinerario.nota,
+    });
+  };
+
+  const editarItinerario = () => {
+    setItinerario((prevItinerario) =>
+      prevItinerario.map((item) =>
+        item.id === itinerarioEditando
+          ? {
+              ...itinerario,
+              lugar: itinerarioEditForm.lugar,
+              categoria: itinerarioEditForm.categoria,
+              direccion: itinerarioEditForm.direccion,
+              nota: itinerarioEditForm.nota,
+            }
+          : item,
+      ),
+    );
+    setItinerarioEditForm({
+      lugar: "",
+      categoria: "",
+      direccion: "",
+      nota: "",
+    });
+    setItinerarioEditando(null);
+  };
+
   const editarGasto = () => {
     setGastos((prevGastos) =>
       prevGastos.map((gasto) =>
@@ -271,6 +333,58 @@ function App() {
     });
   };
 
+  const handleChangeItinerario = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    setFormItinerario({
+      ...formItinerario,
+      [name]: value,
+    });
+  };
+
+  const agregarItinerario = () => {
+    const nuevoLugar = {
+      id: crypto.randomUUID(),
+      lugar: formItinerario.lugar,
+      categoria: formItinerario.categoria,
+      direccion: formItinerario.direccion,
+      nota: formItinerario.nota,
+      completado: false,
+    };
+    setItinerario((prevItinerario) => [...prevItinerario, nuevoLugar]);
+    setFormItinerario({
+      lugar: "",
+      categoria: "",
+      direccion: "",
+      nota: "",
+    });
+  };
+
+  const eliminarItinerario = (IdItinerario) => {
+    setItinerario((prevItinerario) =>
+      prevItinerario.filter((item) => item.id !== IdItinerario),
+    );
+  };
+
+  const cancelarEdicionItinerario = () => {
+    setItinerarioEditando(null);
+    setItinerarioEditForm({
+      lugar: "",
+      categoria: "",
+      direccion: "",
+      nota: "",
+    });
+  };
+
+  const handleItinerarioEdit = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    setItinerarioEditForm({
+      ...itinerarioEditForm,
+      [name]: value,
+    });
+  };
+
   const agregarPendiente = () => {
     const nuevoPendiente = {
       id: crypto.randomUUID(),
@@ -311,6 +425,16 @@ function App() {
       prioridad: "",
     });
     setPendienteEditando(null);
+  };
+
+  const marcarVisitado = (IdItinerario) => {
+    setItinerario((prevItinerario) =>
+      prevItinerario.map((item) =>
+        item.id === IdItinerario
+          ? { ...item, completado: !item.completado }
+          : item,
+      ),
+    );
   };
 
   const handleChangePendientes = (e) => {
@@ -369,52 +493,7 @@ function App() {
           <p>Tasa de cambio de hoy: ${tasaCambio}</p>
         )}
 
-        <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-100">
-            Presupuesto
-          </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="orlando" className="text-sm text-slate-400">
-                Orlando
-              </label>
-              <input
-                value={presupuesto.orlando}
-                name="orlando"
-                onChange={handleChangePresupuesto}
-                type="number"
-                id="orlando"
-                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label htmlFor="newYork" className="text-sm text-slate-400">
-                New York
-              </label>
-              <input
-                value={presupuesto.newYork}
-                onChange={handleChangePresupuesto}
-                name="newYork"
-                type="number"
-                id="newYork"
-                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label htmlFor="total" className="text-sm text-slate-400">
-                Total
-              </label>
-              <input
-                value={presupuesto.total}
-                onChange={handleChangePresupuesto}
-                name="total"
-                type="number"
-                id="total"
-                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
-              />
-            </div>
-          </div>
-        </section>
+        <Presupuesto values={presupuesto} onChange={handleChangePresupuesto} />
 
         <div className="flex gap-2 border-b border-slate-800">
           <button
@@ -438,6 +517,17 @@ function App() {
             }`}
           >
             Pendientes
+          </button>
+          <button
+            type="button"
+            onClick={() => setTabActiva("itinerario")}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              tabActiva === "itinerario"
+                ? "border-b-2 border-indigo-500 text-slate-100"
+                : "text-slate-500 hover:text-slate-300"
+            }`}
+          >
+            Itinerario
           </button>
         </div>
 
@@ -526,6 +616,39 @@ function App() {
                   onSubmit={editarPendiente}
                   onEliminar={eliminarPendiente}
                   onCancelar={cancelarEdicionPendiente}
+                />
+              </div>
+            )}
+          </section>
+        )}
+
+        {tabActiva === "itinerario" && (
+          <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-semibold text-slate-100">
+              Itinerario
+            </h2>
+            <FormularioItinerario
+              values={formItinerario}
+              onChange={handleChangeItinerario}
+              onSubmit={agregarItinerario}
+            />
+
+            {itinerario.length === 0 ? (
+              <p className="mt-4 text-sm text-slate-500">
+                Todavía no has agregado ningún lugar.
+              </p>
+            ) : (
+              <div className="mt-4">
+                <ListaItinerarios
+                  itinerario={itinerario}
+                  itinerarioEditando={itinerarioEditando}
+                  itinerarioEditForm={itinerarioEditForm}
+                  onChange={handleItinerarioEdit}
+                  onEditar={iniciarEdicionItinerario}
+                  onEliminar={eliminarItinerario}
+                  onSubmit={editarItinerario}
+                  onCancelar={cancelarEdicionItinerario}
+                  onCompletar={marcarVisitado}
                 />
               </div>
             )}

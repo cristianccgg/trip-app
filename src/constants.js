@@ -10,3 +10,9 @@ export const metodosPago = ["Tarjeta", "Efectivo", "Paypal"];
 export const usuarios = ["Cristian", "Daniela", "Ambos"];
 export const ciudades = ["Orlando", "New York", "Bogota"];
 export const prioridades = ["Baja", "Media", "Alta"];
+export const categoriasItinerario = [
+  "Restaurante",
+  "Lugares",
+  "Tienda",
+  "Otro",
+];
