@@ -25,7 +25,7 @@ const GastoCard = ({
           textoSubmit="Guardar cambios"
         />
       ) : (
-        <div className="flex items-start justify-between gap-4 rounded-lg border border-slate-800 bg-slate-800/30 p-4 transition-colors hover:border-slate-700">
+        <div className="flex flex-col gap-3 rounded-lg border border-slate-800 bg-slate-800/30 p-4 transition-colors hover:border-slate-700 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <p className="font-medium text-slate-100">{gasto.titulo}</p>
@@ -44,7 +44,7 @@ const GastoCard = ({
               <p className="mt-1 text-sm italic text-slate-500">{gasto.nota}</p>
             )}
           </div>
-          <div className="flex shrink-0 items-center gap-4">
+          <div className="flex shrink-0 items-center justify-between gap-4 sm:justify-normal">
             <div className="text-right">
               <p
                 className={`font-semibold whitespace-nowrap ${gasto.moneda === "USD" ? "text-emerald-400" : "text-indigo-400"}`}

@@ -3,6 +3,8 @@ import FormularioGasto from "./components/FormularioGasto";
 import Filtros from "./components/Filtros";
 import ListaGastos from "./components/ListaGastos";
 import Totales from "./components/Totales";
+import FormularioPendientes from "./components/FormularioPendientes";
+import ListaPendientes from "./components/ListaPendientes";
 
 function App() {
   const [gastos, setGastos] = useState(() => {
@@ -18,6 +20,7 @@ function App() {
   const [errorTasa, setErrorTasa] = useState(false);
   const [gastoEditando, setGastoEditando] = useState(null);
   const [abrirRegistro, setAbrirRegistro] = useState(false);
+  const [tabActiva, setTabActiva] = useState("gastos");
   const [presupuesto, setPresupuesto] = useState(() => {
     const guardado = localStorage.getItem("presupuesto");
     if (guardado) {
@@ -30,6 +33,28 @@ function App() {
       };
     }
   });
+  const [pendientes, setPendientes] = useState(() => {
+    const guardados = localStorage.getItem("pendientes");
+    if (guardados) {
+      return JSON.parse(guardados);
+    } else {
+      return [];
+    }
+  });
+  const [formPendientes, setFormPendientes] = useState({
+    titulo: "",
+    prioridad: "Baja",
+    completado: false,
+  });
+  const [pendienteEditando, setPendienteEditando] = useState(null);
+  const [pendienteEditForm, setPendienteEditForm] = useState({
+    titulo: "",
+    prioridad: "",
+  });
+
+  useEffect(() => {
+    localStorage.setItem("pendientes", JSON.stringify(pendientes));
+  }, [pendientes]);
 
   useEffect(() => {
     localStorage.setItem("gastos", JSON.stringify(gastos));
@@ -129,6 +154,14 @@ function App() {
       fecha: gasto.fecha,
       nota: gasto.nota,
       pagador: gasto.pagador,
+    });
+  };
+
+  const iniciarEdicionPendiente = (pendiente) => {
+    setPendienteEditando(pendiente.id);
+    setPendienteEditForm({
+      titulo: pendiente.titulo,
+      prioridad: pendiente.prioridad,
     });
   };
 
@@ -238,6 +271,82 @@ function App() {
     });
   };
 
+  const agregarPendiente = () => {
+    const nuevoPendiente = {
+      id: crypto.randomUUID(),
+      titulo: formPendientes.titulo,
+      prioridad: formPendientes.prioridad,
+      completado: formPendientes.completado,
+    };
+    setPendientes((prevPendientes) => [...prevPendientes, nuevoPendiente]);
+    setFormPendientes({
+      titulo: "",
+      prioridad: "Baja",
+      completado: false,
+    });
+  };
+
+  const cancelarEdicionPendiente = () => {
+    setPendienteEditando(null);
+    setPendienteEditForm({
+      titulo: "",
+      prioridad: "",
+    });
+  };
+
+  const editarPendiente = () => {
+    setPendientes((prevPendientes) =>
+      prevPendientes.map((pendiente) =>
+        pendiente.id === pendienteEditando
+          ? {
+              ...pendiente,
+              titulo: pendienteEditForm.titulo,
+              prioridad: pendienteEditForm.prioridad,
+            }
+          : pendiente,
+      ),
+    );
+    setPendienteEditForm({
+      titulo: "",
+      prioridad: "",
+    });
+    setPendienteEditando(null);
+  };
+
+  const handleChangePendientes = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    setFormPendientes({
+      ...formPendientes,
+      [name]: value,
+    });
+  };
+
+  const handlePendientesEdit = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    setPendienteEditForm({
+      ...pendienteEditForm,
+      [name]: value,
+    });
+  };
+
+  const marcarCompletado = (IdPendiente) => {
+    setPendientes((prevPendientes) =>
+      prevPendientes.map((pendiente) =>
+        pendiente.id === IdPendiente
+          ? { ...pendiente, completado: !pendiente.completado }
+          : pendiente,
+      ),
+    );
+  };
+
+  const eliminarPendiente = (IdPendiente) => {
+    setPendientes((prevPendientes) =>
+      prevPendientes.filter((pendiente) => pendiente.id !== IdPendiente),
+    );
+  };
+
   const gastosFiltrados = gastos.filter(
     (gasto) =>
       (filtros.ciudad === "todas" || gasto.ciudad === filtros.ciudad) &&
@@ -260,95 +369,168 @@ function App() {
           <p>Tasa de cambio de hoy: ${tasaCambio}</p>
         )}
 
-        <div>
-          <h2>Presupuesto</h2>
-          <div className="flex justify-between">
-            <div className="flex flex-col">
-              <label htmlFor="orlando">Orlando</label>
+        <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-slate-100">
+            Presupuesto
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="orlando" className="text-sm text-slate-400">
+                Orlando
+              </label>
               <input
                 value={presupuesto.orlando}
                 name="orlando"
                 onChange={handleChangePresupuesto}
                 type="number"
                 id="orlando"
+                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
               />
             </div>
-            <div className="flex flex-col">
-              <label htmlFor="newYork">New York</label>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="newYork" className="text-sm text-slate-400">
+                New York
+              </label>
               <input
                 value={presupuesto.newYork}
                 onChange={handleChangePresupuesto}
                 name="newYork"
                 type="number"
                 id="newYork"
+                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
               />
             </div>
-            <div className="flex flex-col">
-              <label htmlFor="total">Total</label>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="total" className="text-sm text-slate-400">
+                Total
+              </label>
               <input
                 value={presupuesto.total}
                 onChange={handleChangePresupuesto}
                 name="total"
                 type="number"
                 id="total"
+                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
               />
             </div>
           </div>
+        </section>
+
+        <div className="flex gap-2 border-b border-slate-800">
+          <button
+            type="button"
+            onClick={() => setTabActiva("gastos")}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              tabActiva === "gastos"
+                ? "border-b-2 border-indigo-500 text-slate-100"
+                : "text-slate-500 hover:text-slate-300"
+            }`}
+          >
+            Gastos
+          </button>
+          <button
+            type="button"
+            onClick={() => setTabActiva("pendientes")}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              tabActiva === "pendientes"
+                ? "border-b-2 border-indigo-500 text-slate-100"
+                : "text-slate-500 hover:text-slate-300"
+            }`}
+          >
+            Pendientes
+          </button>
         </div>
 
-        {!abrirRegistro ? (
-          <button
-            onClick={() => setAbrirRegistro(true)}
-            type="button"
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 sm:col-span-3"
-          >
-            Registrar nuevo gasto
-          </button>
-        ) : (
-          <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
-            <h2 className="mb-4 text-lg font-semibold text-slate-100">
-              Nuevo gasto
-            </h2>
-            <FormularioGasto
-              values={gastosFormulario}
-              onChange={handleGastosChange}
-              onSubmit={agregarGasto}
-              disabled={cargandoTasa}
-              onCancelar={cancelarRegistro}
-            />
-          </section>
+        {tabActiva === "gastos" && (
+          <div className="space-y-8">
+            {!abrirRegistro ? (
+              <button
+                onClick={() => setAbrirRegistro(true)}
+                type="button"
+                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 sm:col-span-3"
+              >
+                Registrar nuevo gasto
+              </button>
+            ) : (
+              <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
+                <h2 className="mb-4 text-lg font-semibold text-slate-100">
+                  Nuevo gasto
+                </h2>
+                <FormularioGasto
+                  values={gastosFormulario}
+                  onChange={handleGastosChange}
+                  onSubmit={agregarGasto}
+                  disabled={cargandoTasa}
+                  onCancelar={cancelarRegistro}
+                />
+              </section>
+            )}
+
+            <Filtros filtros={filtros} onChange={handleChange} />
+
+            <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
+              <h2 className="mb-4 text-lg font-semibold text-slate-100">
+                Lista de gastos
+              </h2>
+
+              {gastosFiltrados.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  Todavía no has agregado ningún gasto.
+                </p>
+              ) : (
+                <ListaGastos
+                  gastosFiltrados={gastosFiltrados}
+                  gastoEditando={gastoEditando}
+                  gastoEditForm={gastoEditForm}
+                  onChange={handleGastosEdit}
+                  onEliminar={eliminarGasto}
+                  onEditar={iniciarEdicion}
+                  onCancelar={cancelarEdicion}
+                  onSubmit={editarGasto}
+                />
+              )}
+
+              <Totales
+                gastosFiltrados={gastosFiltrados}
+                presupuesto={presupuesto}
+                tasaCambio={tasaCambio}
+              />
+            </section>
+          </div>
         )}
 
-        <Filtros filtros={filtros} onChange={handleChange} />
-
-        <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-100">
-            Lista de gastos
-          </h2>
-
-          {gastosFiltrados.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              Todavía no has agregado ningún gasto.
-            </p>
-          ) : (
-            <ListaGastos
-              gastosFiltrados={gastosFiltrados}
-              gastoEditando={gastoEditando}
-              gastoEditForm={gastoEditForm}
-              onChange={handleGastosEdit}
-              onEliminar={eliminarGasto}
-              onEditar={iniciarEdicion}
-              onCancelar={cancelarEdicion}
-              onSubmit={editarGasto}
+        {tabActiva === "pendientes" && (
+          <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-semibold text-slate-100">
+              Pendientes
+            </h2>
+            <FormularioPendientes
+              values={formPendientes}
+              onChange={handleChangePendientes}
+              onSubmit={agregarPendiente}
             />
-          )}
 
-          <Totales
-            gastosFiltrados={gastosFiltrados}
-            presupuesto={presupuesto}
-            tasaCambio={tasaCambio}
-          />
-        </section>
+            {pendientes.length === 0 ? (
+              <p className="mt-4 text-sm text-slate-500">
+                Todavía no has agregado ningún pendiente.
+              </p>
+            ) : (
+              <div className="mt-4">
+                <ListaPendientes
+                  pendientes={pendientes}
+                  onCompletado={marcarCompletado}
+                  onChange={handlePendientesEdit}
+                  pendienteEditando={pendienteEditando}
+                  pendienteEditForm={pendienteEditForm}
+                  onEditar={iniciarEdicionPendiente}
+                  onSubmit={editarPendiente}
+                  onEliminar={eliminarPendiente}
+                  onCancelar={cancelarEdicionPendiente}
+                />
+              </div>
+            )}
+          </section>
+        )}
       </div>
     </div>
   );
